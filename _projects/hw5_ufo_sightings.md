@@ -1,4 +1,5 @@
 ---
+permalink: /projects/hw5_ufo_sightings/
 name: UFO Sightings — Time and Place
 tools: [Python, Altair, Vega-Lite]
 description: Two views of reported UFO sightings, including an interactive filter by reported shape.
