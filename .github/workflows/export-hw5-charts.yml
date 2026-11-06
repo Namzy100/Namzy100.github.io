@@ -1,0 +1,41 @@
+name: Export Homework 5 Altair charts
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'python_notebooks/HW5_UFO_Sightings.ipynb'
+      - '.github/workflows/export-hw5-charts.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  charts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install pandas altair
+      - name: Run notebook code and export Vega-Lite JSON
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          notebook = json.loads(Path("python_notebooks/HW5_UFO_Sightings.ipynb").read_text())
+          variables = {"__name__": "__main__"}
+          for i, cell in enumerate(notebook["cells"]):
+              if cell["cell_type"] == "code":
+                  code = "".join(cell["source"]) if isinstance(cell["source"], list) else cell["source"]
+                  print(f"Running cell {i}")
+                  exec(compile(code, f"cell_{i}", "exec"), variables)
+          PY
+      - name: Commit exported charts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/json/hw5_ufo_hour_month.json assets/json/hw5_ufo_shape_states.json
+          git diff --cached --quiet || (git commit -m "Export Homework 5 visualization specs" && git push)
